@@ -3,13 +3,20 @@
 
 import random
 
+
 class TimeGenerator():
-    def __init__(self,seed):
-        random.seed(seed)
+    @staticmethod
+    def seed_set(seed):
+        random.seed = seed
 
-    def uniform (self, lower_limit = 0 , upper_limit = 1):
-        return random.random()*(upper_limit-lower_limit)+lower_limit
+    class Uniform():
+        def __init__(self, lower_limit=0, upper_limit=1):
+            self.lower_limit = lower_limit
+            self.upper_limit = upper_limit
 
-    def triangular(self, lower_limit = 0 , mean = .5 , upper_limit = 1):
+        def generate(self):
+            return random.random() * (self.upper_limit - self.lower_limit) + self.lower_limit
+'''
+    class Triangular(self, lower_limit=0, mean=.5, upper_limit=1):
         pass
-
+'''
