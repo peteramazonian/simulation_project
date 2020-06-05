@@ -19,6 +19,13 @@ class TimeGenerator:
         def generate(self):
             return round(self.random() * (self.upper_limit - self.lower_limit) + self.lower_limit, 3)
 
+    class Static():
+        def __init__(self, x=0):
+            self.x = x
+
+        def generate(self):
+            return self.x
+
     class Exponential(random.Random):
         def __init__(self, mean=1, **kwargs):
             self.x = None

@@ -4,7 +4,6 @@ from movement import Movement
 from time_generator import TimeGenerator
 from number_generator import NumberGenerator
 import time_management
-from logger import Logger
 
 # Its our simulation's main file.
 # Here we import classes and functions from other project files.
@@ -17,9 +16,21 @@ from logger import Logger
 # ---------------------------------------------------------------------
 
 # -------- First SystemArrival object --------
-t_generator = TimeGenerator.Uniform(1, 1, seed=1212)  # Creating its TimeGenerator
-n_generator = NumberGenerator.Discrete((1, 1, 1), (0.2, 0.3, 0.5), seed=1010)  # Creating its NumberGenerator
-ief = SystemArrival("ief", t_generator, n_generator)  # Creating first SystemArrival object
+t_generator = TimeGenerator.Exponential(3)  # Creating its TimeGenerator
+n_generator = NumberGenerator.Static(1)  # Creating its NumberGenerator
+ief1 = SystemArrival("ief1", t_generator, n_generator)  # Creating first SystemArrival object
+del n_generator, t_generator
+
+# -------- Second SystemArrival object --------
+t_generator = TimeGenerator.Exponential(5)  # Creating its TimeGenerator
+n_generator = NumberGenerator.Discrete((1, 2, 3, 4), (0.2, 0.3, 0.3, 0.2))  # Creating its NumberGenerator
+ief2 = SystemArrival("ief2", t_generator, n_generator)  # Creating first SystemArrival object
+del n_generator, t_generator
+
+# -------- Third SystemArrival object --------
+t_generator = TimeGenerator.Uniform(0, 120)  # Creating its TimeGenerator
+n_generator = NumberGenerator.Poisson(30)  # Creating its NumberGenerator
+ief3 = SystemArrival("ief3", t_generator, n_generator)  # Creating first SystemArrival object
 del n_generator, t_generator
 
 # ---------------------------------------------------------------------
@@ -27,17 +38,17 @@ del n_generator, t_generator
 # ---------------------------------------------------------------------
 
 # -------- First ServiceStation object --------
-t_generator = TimeGenerator.Uniform(10, 10, seed=1020)  # Creating its TimeGenerator
+t_generator = TimeGenerator.DoubleTriangular(1, 2, 4, 1, 2, 3)  # Creating its TimeGenerator
 ss1 = ServiceStation("ss1", t_generator, 5)  # Creating first ServiceStation object
 del t_generator
 
 # -------- Second ServiceStation object --------
-t_generator = TimeGenerator.Uniform(2, 2, seed=4040)  # Creating its TimeGenerator
+t_generator = TimeGenerator.Uniform(0.5, 2)  # Creating its TimeGenerator
 ss2 = ServiceStation("ss2", t_generator, 2)  # Creating first ServiceStation object
 del t_generator
 
 # -------- Third ServiceStation object --------
-t_generator = TimeGenerator.Uniform(2, 2, seed=3030)  # Creating its TimeGenerator
+t_generator = TimeGenerator.Triangular(10, 20, 30)  # Creating its TimeGenerator
 ss3 = ServiceStation("ss3", t_generator, 30)  # Creating first ServiceStation object
 del t_generator
 
@@ -45,30 +56,38 @@ del t_generator
 #                   Creating Movement objects
 # ---------------------------------------------------------------------
 
-m1 = Movement(TimeGenerator.Uniform(1, 1, seed=8080))
-m2 = Movement(TimeGenerator.Uniform(1, 1, seed=8080))
-m3 = Movement(TimeGenerator.Uniform(1, 1, seed=8080))
-m4 = Movement(TimeGenerator.Uniform(1, 1, seed=8080))
+m1 = Movement(TimeGenerator.Static(0))
+m2 = Movement(TimeGenerator.Exponential(0.5))
+m3 = Movement(TimeGenerator.Exponential(0.5))
+m4 = Movement(TimeGenerator.Exponential(1))
 
 Movement.check()
 
+# ---------------------------------------------------------------------
+#                   Creating Loggers
+# ---------------------------------------------------------------------
+time_management.logger_set_list(ServiceStation.list)
 
+# ---------------------------------------------------------------------
+#                   Creating Preliminary FEL
+# ---------------------------------------------------------------------
+ief1.set_first_arrival(0)
+ief2.set_first_arrival(0)
+ief3.set_single_arrival(60)
+ss1.set_rest_times([50, 110, 230, 290])
+ss2.set_rest_times([50, 110, 230, 290])
 
+# ---------------------------------------------------------------------
+#                      Set Duration
+# ---------------------------------------------------------------------
+time_management.set_end_of_simulation(300)
 
-# Setting the simulation's duration
-ief.new_arrival(0)
-time_management.add_to_fel((60, "R1", ss1.server_rest))
-time_management.add_to_fel((120, "R1", ss1.server_rest))
-time_management.add_to_fel((180, "R1", ss1.server_rest))
-time_management.add_to_fel((240, "R1", ss1.server_rest))
-i = 0
-while i < 1000:
-    # x = input("'y' to continue,   'e' to exit")
-    # if x == 'y':
-    time_management.advance_time()
-    i += 1
-    print(i)
-    # elif x == 'e':
-    #     break
-
+# ---------------------------------------------------------------------
+#                           RUN!
+# ---------------------------------------------------------------------
+try:
+    while True:
+        time_management.advance_time()
+except time_management.SimulationDone:
+    print("Simulation DONE!")
 time_management.close_logger()

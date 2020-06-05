@@ -1,6 +1,6 @@
 import time_management
 from time_management import add_to_fel
-from system_arrival import departure
+from system_arrival import SystemArrival
 ss_list = __import__('service_station').ServiceStation.list
 
 
@@ -33,6 +33,6 @@ class Movement():
                 ss_list[self.position - 1].arrival)
             add_to_fel(event_notice)
         else:
-            event_notice = (self.time_generator.generate() + time_management.clock, "D", costumer_id, departure)
+            event_notice = (self.time_generator.generate() + time_management.clock, "D", costumer_id, SystemArrival.departure)
             add_to_fel(event_notice)
 
