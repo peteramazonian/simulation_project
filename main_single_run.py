@@ -4,6 +4,8 @@ from movement import Movement
 from time_generator import TimeGenerator
 from number_generator import NumberGenerator
 import time_management
+from logger_single_run import LoggerSR
+
 
 # Its our simulation's main file.
 # Here we import classes and functions from other project files.
@@ -66,7 +68,8 @@ Movement.check()
 # ---------------------------------------------------------------------
 #                   Creating Loggers
 # ---------------------------------------------------------------------
-time_management.logger_set_list(ServiceStation.list)
+# time_management.logger_set_list(ServiceStation.list)
+logger = LoggerSR(ServiceStation.list)
 
 # ---------------------------------------------------------------------
 #                   Creating Preliminary FEL
@@ -80,14 +83,21 @@ ss2.set_rest_times([50, 110, 230, 290])
 # ---------------------------------------------------------------------
 #                      Set Duration
 # ---------------------------------------------------------------------
-time_management.set_end_of_simulation(300)
+es = 300
+time_management.set_end_of_simulation(es)
 
 # ---------------------------------------------------------------------
 #                           RUN!
 # ---------------------------------------------------------------------
 try:
     while True:
-        time_management.advance_time()
+        logger.fel_logger(time_management.advance_time())
 except time_management.SimulationDone:
+    for ss in ServiceStation.list:
+        ss.final_calculations()
+    SystemArrival.final_calculations()
+    logger.fel_logger((es, "ES", 0))
+    logger.result_logger()
     print("Simulation DONE!")
-time_management.close_logger()
+logger.close_file()
+
