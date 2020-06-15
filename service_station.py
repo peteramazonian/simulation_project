@@ -29,6 +29,7 @@ class ServiceStation:
         self.position = len(ServiceStation.list) + 1
         ServiceStation.list.append(self)
         self.m_list = __import__('movement').Movement.list
+        self.result = {}
         # --------------------------------------------------------
         # Variables to measure system evaluation parameters:
         self.q_len_cumulative = 0
@@ -42,6 +43,11 @@ class ServiceStation:
         self.servers_busy_last_clock = 0    # Last time the busy servers number changed
         self.servers_total_available_t = 0  # Sum of available servers * time in different periods
         self.servers_available_last_clock = 0   # Last time the available servers number changed
+        # ---
+        self.queue_delay_cumulative = 0   # Total time costumers waited in queue
+        # ---
+        # TODO edit this
+        self.queue_total_time = 0
 
     # Overriding Python's original __repr__ function
     def __repr__(self):
@@ -49,8 +55,9 @@ class ServiceStation:
 
     def return_printables(self):
         return([self.available_servers, self.busy_servers, len(self.queue_list), self.rest_in_waiting,
-                           self.q_len_cumulative, self.q_len_max, self.service_total_time, self.service_total_count,
-                           self.servers_total_busy_t, self.servers_total_available_t])
+                self.q_len_cumulative, self.q_len_max, self.service_total_time, self.service_total_count,
+                self.queue_delay_cumulative, self.queue_total_time, self.servers_total_busy_t,
+                self.servers_total_available_t])
 
     # Handles arrivals to this station.
     def arrival(self, costumer_id):
@@ -66,6 +73,7 @@ class ServiceStation:
             self.service_total_count += 1
         else:  # Waiting in queue
             self.q_len_cumulative += len(self.queue_list) * (time_management.clock - self.q_len_last_clock)
+            self.queue_total_time += int(bool(len(self.queue_list))) * (time_management.clock - self.q_len_last_clock)
             self.q_len_last_clock = time_management.clock
             self.queue_list.append((time_management.clock, costumer_id))  # Adding costumer to queue
             if len(self.queue_list) > self.q_len_max:
@@ -83,7 +91,10 @@ class ServiceStation:
                 self.service_total_time += event_duration
                 self.service_total_count += 1
                 self.q_len_cumulative += len(self.queue_list) * (time_management.clock - self.q_len_last_clock)
+                self.queue_total_time += int(bool(len(self.queue_list))) * (
+                            time_management.clock - self.q_len_last_clock)
                 self.q_len_last_clock = time_management.clock
+                self.queue_delay_cumulative += time_management.clock - self.queue_list[0][0]
                 del self.queue_list[0]  # Deleting the costumer which starts getting service, from queue.
             else:
                 self.servers_total_busy_t += self.busy_servers * (time_management.clock - self.servers_busy_last_clock)
@@ -128,10 +139,29 @@ class ServiceStation:
             self.service_total_time += event_duration
             self.service_total_count += 1
             self.q_len_cumulative += len(self.queue_list) * (time_management.clock - self.q_len_last_clock)
+            self.queue_total_time += int(bool(len(self.queue_list))) * (time_management.clock - self.q_len_last_clock)
             self.q_len_last_clock = time_management.clock
+            self.queue_delay_cumulative += time_management.clock - self.queue_list[0][0]
             del self.queue_list[0]  # Deleting the costumer which starts getting service, from queue.
 
     def set_rest_times(self, rest_times_list):
         for t in rest_times_list:
             event_notice = (t, "R" + str(self.position), self.server_rest)
             add_to_fel(event_notice)
+
+    def final_calculations(self):
+        self.q_len_cumulative += len(self.queue_list) * (time_management.clock - self.q_len_last_clock)
+        self.queue_total_time += int(bool(len(self.queue_list))) * (time_management.clock - self.q_len_last_clock)
+        self.servers_total_busy_t += self.busy_servers * (time_management.clock - self.servers_busy_last_clock)
+        self.servers_total_available_t += self.available_servers * (
+                    time_management.clock - self.servers_available_last_clock)
+
+        self.result = dict(
+            total_wait_time=(self.service_total_time + self.queue_delay_cumulative) / self.service_total_count,
+            average_queue_delay=self.queue_delay_cumulative / self.service_total_count,
+            average_queue_length=self.q_len_cumulative / time_management.clock,
+            maximum_queue_length=self.q_len_max,
+            servers_efficiency=self.servers_total_busy_t / self.servers_total_available_t,
+            queue_busy_percentage=self.queue_total_time / time_management.clock
+        )
+

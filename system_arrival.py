@@ -17,6 +17,7 @@ class SystemArrival:
     costumers_inside_dict = {}
     costumers_departured = 0
     costumers_total_time = 0
+    result = {}
 
     @classmethod
     def departure(cls, costumer_id):
@@ -64,6 +65,6 @@ class SystemArrival:
             SystemArrival.costumers_inside_dict[id_tmp] = time_management.clock
             self.m_list[0].move(id_tmp)
 
-
-def departure(costumer_id):
-    pass
+    @classmethod
+    def final_calculations(cls):
+        cls.result = dict(average_time_in_system=cls.costumers_total_time / cls.costumers_departured)

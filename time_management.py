@@ -1,14 +1,7 @@
 import bisect
-from logger import Logger
 
 fel = []
 clock = 0
-logger = None
-
-
-def logger_set_list(s_list):
-    global logger
-    logger = Logger(s_list)
 
 
 def add_to_fel(event_notice: tuple):
@@ -43,8 +36,5 @@ def advance_time():
     del fel[0]
     clock = tmp[0]
     tmp[-1](tmp[-2])
-    logger.fel_logger(tmp)
+    return tmp
 
-
-def close_logger():
-    logger.close_file()
