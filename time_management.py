@@ -1,8 +1,10 @@
 import bisect
 
 
+# ----------------------------------------------------------------------------------------------------------------
 # In this module we handle anything related to FEL and clock. in another word this module is the engine that makes
 # the code to move.
+# ----------------------------------------------------------------------------------------------------------------
 
 
 fel = []    # It's our simulation's main Future Event List.
